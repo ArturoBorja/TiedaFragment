@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.example.tiedafragment.Adaptadores.AdaptadorCategoria;
 import com.example.tiedafragment.Adaptadores.CategoriaHolder;
 import com.example.tiedafragment.Entidades.Categorias;
+import com.example.tiedafragment.R;
 
 import java.util.List;
 
@@ -23,15 +24,13 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ListaCategoriaFragment extends Fragment implements CategoriaHolder.CategoriaCallback {
+public class DetalleFragment extends Fragment implements CategoriaHolder.CategoriaCallback {
     RecyclerView recyclerView;
-    CallBackCategoria categoriaCallback;
 
-    public ListaCategoriaFragment() {
+    public DetalleFragment() {
         // Required empty public constructor
     }
 
@@ -40,16 +39,21 @@ public class ListaCategoriaFragment extends Fragment implements CategoriaHolder.
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        View v=inflater.inflate(R.layout.fragment_detalle, container, false);
+        recyclerView = v.findViewById(R.id.rv_detalle_fragment);
+        return v;
+    }
+
+    void CargarDatos(int id){
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://viveyupi.com/api/").addConverterFactory(GsonConverterFactory.create()).build();
         ServicioTienda s =retrofit.create(ServicioTienda.class);
-        Call<List<Categorias>> call = s.ObtenerCategoriasPorNivel(1);
-        View v =inflater.inflate(R.layout.fragment_lista_categoria, container, false);
-        recyclerView = v.findViewById(R.id.rv_fragment_lista);
+        Call<List<Categorias>> call = s.ObtenerCategoriasPorPadre(id);
         call.enqueue(new Callback<List<Categorias>>() {
             @Override
             public void onResponse(Call<List<Categorias>> call, Response<List<Categorias>> response) {
-                AdaptadorCategoria adaptadorCategoria =new AdaptadorCategoria(getContext(),ListaCategoriaFragment.this,response.body());
+                AdaptadorCategoria adaptadorCategoria =
+                        new AdaptadorCategoria(getContext(),DetalleFragment.this,response.body());
                 recyclerView.setAdapter(adaptadorCategoria);
                 recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
             }
@@ -59,16 +63,10 @@ public class ListaCategoriaFragment extends Fragment implements CategoriaHolder.
 
             }
         });
-
-        return v;
     }
 
     @Override
     public void CategoriaSeleccionar(int id) {
-        categoriaCallback.CategoriaSeleccionada(id);
-    }
-    public interface CallBackCategoria{
-        void CategoriaSeleccionada(int codigo);
-    }
 
+    }
 }
